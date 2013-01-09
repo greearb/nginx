@@ -18,6 +18,7 @@ typedef struct ngx_listening_s  ngx_listening_t;
 struct ngx_listening_s {
     ngx_socket_t        fd;
 
+    char                dev_name[32]; /* Use SO_BINDTODEVICE if this is not zero-length */
     struct sockaddr    *sockaddr;
     socklen_t           socklen;    /* size of sockaddr */
     size_t              addr_text_max_len;

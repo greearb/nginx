@@ -68,6 +68,7 @@ typedef struct {
     struct sockaddr           *sockaddr;
     socklen_t                  socklen;
     ngx_str_t                  addr_text;
+    char                       dev_name[32]; /* for use with bind_dev */
 
     unsigned                   set:1;
     unsigned                   default_server:1;
