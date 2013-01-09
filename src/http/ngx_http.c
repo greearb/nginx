@@ -1592,6 +1592,16 @@ ngx_http_cmp_conf_addrs(const void *one, const void *two)
         return -1;
     }
 
+    if (first->opt.dev_name[0] && !second->opt.dev_name[0]) {
+        /* shift explicit bind_dev()ed addresses to the start */
+        return -1;
+    }
+
+    if (!first->opt.dev_name[0] && second->opt.dev_name[0]) {
+        /* shift explicit bind_dev()ed addresses to the start */
+        return 1;
+    }
+
     if (first->opt.bind && !second->opt.bind) {
         /* shift explicit bind()ed addresses to the start */
         return -1;
@@ -1740,6 +1750,9 @@ ngx_http_add_listening(ngx_conf_t *cf, ngx_http_conf_addr_t *addr)
     ls->backlog = addr->opt.backlog;
     ls->rcvbuf = addr->opt.rcvbuf;
     ls->sndbuf = addr->opt.sndbuf;
+
+    strncpy(ls->dev_name, addr->opt.dev_name, sizeof(ls->dev_name));
+    ls->dev_name[sizeof(ls->dev_name) - 1] = 0;
 
     ls->keepalive = addr->opt.so_keepalive;
 #if (NGX_HAVE_KEEPALIVE_TUNABLE)
