@@ -67,6 +67,7 @@ typedef struct ngx_http_core_loc_conf_s  ngx_http_core_loc_conf_t;
 typedef struct {
     ngx_sockaddr_t             sockaddr;
     socklen_t                  socklen;
+    char                       dev_name[32]; /* for use with bind_dev */
 
     unsigned                   set:1;
     unsigned                   default_server:1;

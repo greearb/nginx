@@ -3806,6 +3806,12 @@ ngx_http_core_listen(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             continue;
         }
 
+        if (ngx_strncmp(value[n].data, "bind_dev=", 9) == 0) {
+            strncpy(lsopt.dev_name, (char*)(value[n].data + 9), sizeof(lsopt.dev_name));
+            lsopt.dev_name[sizeof(lsopt.dev_name) - 1] = 0;
+            continue;
+        }
+
 #if (NGX_HAVE_SETFIB)
         if (ngx_strncmp(value[n].data, "setfib=", 7) == 0) {
             lsopt.setfib = ngx_atoi(value[n].data + 7, value[n].len - 7);

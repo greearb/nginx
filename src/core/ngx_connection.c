@@ -623,6 +623,27 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
                 continue;
             }
 
+            if (ls[i].dev_name[0]) {
+#ifdef SO_BINDTODEVICE
+                if (setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE,
+                               ls[i].dev_name, strlen(ls[i].dev_name))) {
+                   ngx_log_error(NGX_LOG_EMERG, log, errno, "setsockopt (%i, BINDTODEVICE, %s) failed",
+                                 s, ls[i].dev_name);
+                   return NGX_ERROR;
+                }
+                else {
+                   ngx_log_error(NGX_LOG_EMERG, log, 0, "setsockopt (%i, BINDTODEVICE, %s) succeeded!",
+                                 s, ls[i].dev_name);
+                }
+#else
+                ngx_log_error(NGX_LOG_EMERG, log, 0,
+                              "setsockopt (%i, BINDTODEVICE, %s) not supported on this platform.  Please remove the bind_dev= option for 'listen' directive.",
+                              s, ls[i].dev_name);
+                return NGX_ERROR;
+#endif
+            }
+            
+
 #if (NGX_HAVE_UNIX_DOMAIN)
 
             if (ls[i].sockaddr->sa_family == AF_UNIX) {
