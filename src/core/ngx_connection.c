@@ -535,6 +535,27 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
             ngx_log_debug2(NGX_LOG_DEBUG_CORE, log, 0,
                            "bind() %V #%d ", &ls[i].addr_text, s);
 
+            if (ls[i].dev_name[0]) {
+#ifdef SO_BINDTODEVICE
+                if (setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE,
+                               ls[i].dev_name, strlen(ls[i].dev_name))) {
+                   ngx_log_error(NGX_LOG_EMERG, log, errno, "setsockopt (%i, BINDTODEVICE, %s) failed",
+                                 s, ls[i].dev_name);
+                   return NGX_ERROR;
+                }
+                else {
+                   ngx_log_error(NGX_LOG_EMERG, log, 0, "setsockopt (%i, BINDTODEVICE, %s) succeeded!",
+                                 s, ls[i].dev_name);
+                }
+#else
+                ngx_log_error(NGX_LOG_EMERG, log, 0,
+                              "setsockopt (%i, BINDTODEVICE, %s) not supported on this platform.  Please remove the bind_dev= option for 'listen' directive.",
+                              s, ls[i].dev_name);
+                return NGX_ERROR;
+#endif
+            }
+            
+
             if (bind(s, ls[i].sockaddr, ls[i].socklen) == -1) {
                 err = ngx_socket_errno;
 
@@ -559,27 +580,6 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
 
                 continue;
             }
-
-            if (ls[i].dev_name[0]) {
-#ifdef SO_BINDTODEVICE
-                if (setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE,
-                               ls[i].dev_name, strlen(ls[i].dev_name))) {
-                   ngx_log_error(NGX_LOG_EMERG, log, errno, "setsockopt (%i, BINDTODEVICE, %s) failed",
-                                 s, ls[i].dev_name);
-                   return NGX_ERROR;
-                }
-                else {
-                   ngx_log_error(NGX_LOG_EMERG, log, 0, "setsockopt (%i, BINDTODEVICE, %s) succeeded!",
-                                 s, ls[i].dev_name);
-                }
-#else
-                ngx_log_error(NGX_LOG_EMERG, log, 0,
-                              "setsockopt (%i, BINDTODEVICE, %s) not supported on this platform.  Please remove the bind_dev= option for 'listen' directive.",
-                              s, ls[i].dev_name);
-                return NGX_ERROR;
-#endif
-            }
-            
 
 #if (NGX_HAVE_UNIX_DOMAIN)
 
